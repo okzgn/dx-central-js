@@ -48,15 +48,22 @@ function createImmutable(name, dataContainer){
 }
 
 function createImmutableInterceptors(name, dataContainer){
+    const msgFn = function(message){ return message; };
+
     const messages = {
-        defineProperty: function(message){ return name.defineProperty ? name.defineProperty(message) : message; },
-        setPrototypeOf: function(message){ return name.setPrototypeOf ? name.setPrototypeOf(message) : message; },
-        setContainer: function(message){ return name.setContainer ? name.setContainer(message) : message; },
-        set: function(message){ return name.set ? name.set(message) : message; },
-        deleteProperty: function(message){ return name.deleteProperty ? name.deleteProperty(message) : message; }
+        defineProperty: msgFn,
+        setPrototypeOf: msgFn,
+        setContainer: msgFn,
+        set: msgFn,
+        deleteProperty: msgFn
     };
 
     if(isObject(name)){
+        if(isFn(name.defineProperty)){ messages.defineProperty = name.defineProperty; }
+        if(isFn(name.setPrototypeOf)){ messages.setPrototypeOf = name.setPrototypeOf; }
+        if(isFn(name.setContainer)){ messages.setContainer = name.setContainer; }
+        if(isFn(name.set)){ messages.set = name.set; }
+        if(isFn(name.deleteProperty)){ messages.deleteProperty = name.deleteProperty; }
         messages.name = name.name;
         if(messages.name){
             name = messages.name;
