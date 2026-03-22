@@ -1,0 +1,33 @@
+{
+  "name": "dx-central",
+  "version": "2.0.0",
+  "description": "A robust, zero-dependency system to manage application configurations and shared state. It enforces strict immutability, ensuring your configuration objects are effectively WORM (Write-Once, Read-Many). Say goodbye to unpredictable mutations and state pollution.",
+  "type": "module",
+  "main": "index.js",
+  "exports": "./index.js",
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "DX",
+    "Developer",
+    "Experience",
+    "State",
+    "State-management",
+    "Configuration",
+    "Configuration-management",
+    "Write-Once-Read-Many",
+    "Lightweight",
+    "Zero-dependencies"
+  ],
+  "license": "MIT",
+  "author": "OKZGN",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okzgn/dx-central-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/okzgn/dx-central-js/issues"
+  },
+  "homepage": "https://github.com/okzgn/dx-central-js#readme"
+}
