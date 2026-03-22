@@ -1,7 +1,7 @@
 {
   "name": "dx-central",
-  "version": "2.0.0",
-  "description": "A robust, zero-dependency system to manage application configurations and shared state. It enforces strict immutability, ensuring your configuration objects are effectively WORM (Write-Once, Read-Many). Say goodbye to unpredictable mutations and state pollution.",
+  "version": "2.0.1",
+  "description": "A robust, zero-dependency system to manage application configurations and shared state. It enforces strict immutability, ensuring your configuration objects are effectively Write Once Read Many.",
   "type": "module",
   "main": "index.js",
   "exports": "./index.js",
@@ -17,8 +17,10 @@
     "Configuration",
     "Configuration-management",
     "Write-Once-Read-Many",
+    "WORM",
     "Lightweight",
-    "Zero-dependencies"
+    "Zero-dependency",
+    "Dependency-free"
   ],
   "license": "MIT",
   "author": "OKZGN",

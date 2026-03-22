@@ -2,7 +2,7 @@
 
 **Immutable, Prototype-Safe, and Fail-Fast Configuration Management for JavaScript.**
 
-**DX Central** provides a robust, zero-dependency system to manage application configurations and shared state. It enforces strict immutability, ensuring your configuration objects are effectively **WORM** (*Write-Once, Read-Many*). Say goodbye to unpredictable mutations, prototype pollution, and state spaghetti.
+**DX Central** provides a robust, zero-dependency system to manage application configurations and shared state. It enforces strict immutability, ensuring your configuration objects are effectively **Write Once Read Many**.
 
 ---
 
