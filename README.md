@@ -56,7 +56,8 @@ console.log($Settings.api.url); // 'https://api.myapp.com'
 
 // ❌ 3. Mutations are strictly forbidden
 $Settings.debugMode = false;      // THROW: Cannot reassign "debugMode"
-$Settings.api.timeout = 10000;    // THROW: TypeError (Read-only property)
+$Settings.api.timeout = 10000;    // THROW: Cannot reassign "timeout"
+$Settings.api.retries = 3;        // THROW: Set with Settings({ "retries": 3 })
 delete $Settings.api;             // THROW: Can't delete "api"
 
 // ❌ 4. Modifying existing structures via function throws error too
@@ -109,13 +110,16 @@ $Register({
 ```javascript
 import { $Central } from 'dx-central';
 
-// Aggregates all registered modules into a final, immutable object
+// A live, immutable view of everything registered so far
+// (modules that register later show up in it too)
 const appState = $Central();
 
 console.log(appState.theme.primary); // 'blue' (Protected by Plugin A)
 console.log(appState.featureFlags.beta); // true
 
-// You can also merge the global registry into a local object securely:
+// You can also merge the global registry into a local object securely.
+// This returns a new immutable snapshot; the object you pass is never modified,
+// and its own keys win over registered ones:
 const localConfig = $Central({ localKey: 123 });
 ```
 
@@ -128,19 +132,24 @@ DX Central stops execution the moment a developer tries to break immutability.
 | Error Message / Behavior | Cause | Developer Fix |
 | :--- | :--- | :--- |
 | `Cannot reassign "[prop]"` | Tried to update an existing key via assignment or functional call. | Structure your app to initialize config values only once. |
-| `TypeError: Cannot assign to read only property...` | Tried to update a deeply nested property (e.g., `$Settings.a.b = 2`). | Nested structures are deeply locked. |
-| `Set with [Name]({ "prop": value })` | Tried to add a *brand new* key using `=` assignment. | Use the functional approach: `$Settings({ newKey: 'value' })`. |
-| `Can't delete "[prop]"` | Used the `delete` keyword on the config root. | Deletion is forbidden to ensure reliable state. |
+| `Cannot reassign "a"."b"` | Same as above, for a nested key (the message shows the full path). | Nested structures are deeply locked. |
+| `Set with [Name]({ "prop": value })` | Tried to add a *brand new* key using `=` assignment, at any depth (`$Settings.a.c = 1`, `list.push(3)`). | Use the functional approach: `$Settings({ newKey: 'value' })`. |
+| `Can't delete "[prop]"` | Used the `delete` keyword on any managed object (root or nested). | Deletion is forbidden to ensure reliable state. |
 | `Cannot change prototype of...` | Attempted to use `Object.setPrototypeOf`. | Action blocked for security. |
+| `Cannot prevent extensions of...` | Attempted to use `Object.freeze` / `Object.preventExtensions` on a managed object. | Not needed: it is already locked. |
+| `TypeError: Unsupported value type "[object Date]" at "a"."b"` | Tried to store a `Date`, `Map`, `Set`, `RegExp`, `Promise`... which cannot be locked deeply. | Store a plain value instead (e.g. an ISO string or a timestamp). |
 
 ---
 
 ## 🛠️ Behavior Notes for Developers
 
-* **Deep Immutability:** When you pass an object to DX Central, it recursively traverses it. Every nested object and array becomes deeply read-only.
-* **Array Merging & Methods:** Arrays are locked by index. If you register `[1, 2]` and try to register `[3, 4]` at the same key, it will conflict on index `0` and `1`. Because arrays are strictly locked, methods that mutate them in place (`push`, `pop`, `splice`) will throw a native Javascript `TypeError`. If you need derived arrays, use pure methods like `.map()` or `.filter()`.
+* **Deep Immutability:** When you pass an object to DX Central, it recursively traverses it and stores a *copy*. Every nested object and array becomes deeply read-only: values cannot be reassigned or deleted, and no new keys can be added to them directly. Only plain objects, arrays, functions and primitives are supported; anything else (`Date`, `Map`, `Set`...) is rejected, because it could not be locked.
+* **Atomic Updates:** A call is validated completely before anything is stored. If it throws, nothing from that call was applied (`$Settings({ newKey: 1, existingKey: 2 })` does not add `newKey`).
+* **Shared & Circular References:** An object referenced several times within one call is copied once and shared by every key that referenced it (later additions through one key are visible through the others), and circular references are copied safely.
+* **Array Merging & Methods:** Arrays are locked by index. If you register `[1, 2]` and try to register `[3, 4]` at the same key, it will conflict on index `0` and `1`. Because arrays are strictly locked, methods that mutate them in place (`push`, `pop`, `splice`, `sort`) will throw. If you need derived arrays, use pure methods like `.map()` or `.filter()`.
 * **Function Merging:** When you register a function into DX Central, the original function reference is shallow-frozen using `Object.freeze()`. This ensures absolute integrity and prevents backdoor mutations via external references.
-* **Prototype Nullification:** The structures managed by DX Central (like `$Settings`) inherit from `Object.create(null)`. They do **not** have methods like `.hasOwnProperty()` or `.toString()`. This is by design, ensuring no accidental key collisions with native Object methods.
+* **Enumeration & JSON:** `Object.keys()`, spread (`{ ...$Settings }`), `in` and `JSON.stringify()` work as expected. `$Settings.toJSON()` returns a plain top-level snapshot (a `toJSON` key of your own takes precedence).
+* **Prototype Nullification:** The structures managed by DX Central inherit from `Object.create(null)`. They do **not** have methods like `.hasOwnProperty()` or `.toString()`, so any key name (including `toString` or `valueOf`) is safe to use. Only `__proto__`, `constructor` and `prototype` are ignored.
 
 ---
 
