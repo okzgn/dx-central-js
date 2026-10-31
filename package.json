@@ -1,5 +1,5 @@
 {
-  "name": "dx-central",
+  "name": "dx-central-js",
   "version": "3.0.0",
   "description": "A robust, zero-dependency system to manage application configurations and shared state. It enforces strict immutability, ensuring your configuration objects are effectively Write Once Read Many.",
   "type": "module",
